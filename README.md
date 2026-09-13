@@ -1,9 +1,11 @@
-# RetireWise AI (Open-Source MVP)
+# RetireWise AI (Version 2.0)
 ### Pakistan-Focused Financial Suitability & Retirement Intelligence Platform
 
+[![Version](https://img.shields.io/badge/Release-v2.0--Complete-brightgreen.svg)](https://github.com/HussainAli-AI/Retirewise-AI)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 [![Python](https://img.shields.io/badge/Python-3.10%2B-blue.svg)](https://www.python.org/)
 [![Framework](https://img.shields.io/badge/Streamlit-1.32%2B-red.svg)](https://streamlit.io/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.110%2B-009688.svg)](https://fastapi.tiangolo.com/)
 
 ---
 
@@ -18,7 +20,8 @@ It answers the critical retirement question:
 
 RetireWise AI maintains complete separation between **deterministic, transparent Python calculation engines** and the **AI narrative generation layer**.
 
-📄 **[Institutional Product Requirements Document (PRD PDF)](RetireWise_AI_Product_Requirements_Document_PRD.pdf)**
+📄 **[Institutional Product Requirements Document (PRD PDF)](RetireWise_AI_Product_Requirements_Document_PRD.pdf)**  
+📊 **[Executive Presentation Pitch Deck (PDF)](RetireWise_AI_Presentation_Deck.pdf)**
 
 ---
 
@@ -37,26 +40,36 @@ Retirement planning in Pakistan suffers from:
 
 ---
 
-## 4. MVP Capabilities
+## 4. Platform Capabilities
+
+### Core Engines (V1)
 - **Pakistan-Specific Fact-Find (PKR)**: Captures Provident Fund (PF), Gratuity, Voluntary Pension Scheme (VPS), Gold, Property, and Family Dependents.
 - **Deterministic Risk Engine (0-100)**: 8-question psychometric attitude-to-risk instrument.
 - **Objective Capacity for Loss (0-100)**: Quantifies income dependency, emergency runway, and debt encumbrance.
 - **Automated Suitability Conflict Detector**: Immediately flags mismatches (*High Risk Tolerance + Low Capacity for Loss*).
 - **Multi-Year Retirement Cash Flow Engine**: Year-by-year compounding simulation predicting capital depletion age and horizon sustainability.
 - **5 Stress Testing Scenarios**: Base Case, High Inflation Shock (+5%), Early Market Drawdown (-4%), Healthcare Crisis Shock, and Early Retirement Shock.
-- **Provider-Agnostic AI Narrative Layer**: Pluggable support for Google Gemini, OpenAI, or a built-in deterministic rule engine (100% offline).
+- **Provider-Agnostic AI Narrative Layer**: Pluggable support for Groq (Llama 3.3), Google Gemini, OpenAI, or a built-in deterministic rule engine (100% offline).
 - **Professional 12-Section PDF Report**: Pixel-accurate, audit-ready ReportLab document export.
+
+### Advanced Intelligence & Simulation (V2)
+- **1,000-Trial Vectorized Monte Carlo Engine (`numpy`)**: Stochastic return and inflation simulation with 10th, 50th, and 90th percentile confidence cones and exact **Probability of Retirement Success %**.
+- **Financial Digital Twin Sandbox**: Real-time What-If sensitivity controls (retirement age shift, living expense scaling, and lump-sum cash events).
+- **Pakistan Shariah Asset Allocation Engine**: Capacity-governed equity caps, sovereign Sukuks, KMI-30 equities, VPS sub-funds, and **Section 63 ITO tax credit optimizer**.
+- **Client Self-Service Onboarding Portal**: Standalone pre-consultation onboarding flow (`pages/1_Client_Onboarding.py`).
+- **Headless FastAPI REST Microservice**: Production-grade REST API with interactive Swagger documentation (`/docs`).
 
 ---
 
 ## 5. Technology Stack
 - **Frontend**: Streamlit
+- **Backend REST Microservice**: FastAPI + Uvicorn
+- **Stochastic & Computational Math**: NumPy, Pure Python, Pydantic V2
 - **Visualization**: Plotly Interactive Charts
-- **Core Computational Logic**: Pure Python, Pydantic V2
 - **Persistence**: SQLite (Migratable to PostgreSQL/Supabase)
 - **PDF Reporting**: ReportLab
-- **AI Layer**: Provider-agnostic client (Google Gemini / OpenAI / Offline Fallback)
-- **Testing**: Pytest
+- **AI Layer**: Provider-agnostic client (Groq / Google Gemini / OpenAI / Offline Fallback)
+- **Testing**: Pytest (25/25 automated tests passing)
 
 ---
 
@@ -67,8 +80,8 @@ Retirement planning in Pakistan suffers from:
 
 ### 1. Clone the repository & create Virtual Environment
 ```bash
-git clone https://github.com/your-org/retirewise-ai.git
-cd retirewise-ai
+git clone https://github.com/HussainAli-AI/Retirewise-AI.git
+cd Retirewise-AI
 
 # Create virtual environment
 python -m venv .venv
@@ -90,7 +103,7 @@ Copy `.env.example` to `.env`:
 ```bash
 cp .env.example .env
 ```
-*(Optional)* Add your `GEMINI_API_KEY` or `OPENAI_API_KEY`. If left blank, RetireWise AI automatically operates in deterministic offline mode with zero external dependencies.
+*(Optional)* Add your `GROQ_API_KEY`, `GEMINI_API_KEY`, or `OPENAI_API_KEY`. If left blank, RetireWise AI automatically operates in deterministic offline mode with zero external dependencies and zero cloud cost.
 
 ---
 
@@ -130,7 +143,62 @@ Interactive OpenAPI / Swagger documentation is available at:
 
 ---
 
-## 11. Version History & Roadmap
+## 11. Project Architecture & Directory Structure
+```text
+Retirewise-AI/
+├── .env.example              # Template environment variables
+├── requirements.txt          # Python dependencies
+├── LICENSE                   # Apache 2.0 Open-Source License
+├── README.md                 # Institutional documentation & guide
+├── RetireWise_AI_Product_Requirements_Document_PRD.pdf  # Comprehensive PRD
+├── RetireWise_AI_Presentation_Deck.pdf                 # Executive Pitch Deck
+│
+├── api/                      # Headless REST Microservice
+│   └── main.py               # FastAPI router & OpenAPI endpoints (/docs)
+│
+├── app/                      # Streamlit User Interface
+│   ├── streamlit_app.py      # Main dashboard & multi-tab navigation
+│   └── ui_components.py      # Theme-adaptive cards, inputs & Plotly charts
+│
+├── pages/                    # Multi-page Streamlit Apps
+│   └── 1_Client_Onboarding.py # Self-service pre-consultation client portal
+│
+├── core/                     # Deterministic Calculation Engines
+│   ├── models.py             # Pydantic V2 data models & type schemas
+│   ├── risk_engine.py        # 8-question psychometric attitude-to-risk (0-100)
+│   ├── capacity_engine.py    # Objective capacity for loss & liquidity scoring
+│   ├── suitability_matrix.py # Conflict detection (Risk Appetite vs. Capacity)
+│   ├── cashflow_engine.py    # Multi-year compounding & depletion forecast
+│   ├── stress_engine.py      # 5 Pakistan stress scenarios
+│   ├── monte_carlo_engine.py # 1,000-trial vectorized stochastic engine
+│   ├── digital_twin.py       # Real-time What-If sensitivity sandbox
+│   └── shariah_engine.py     # Sovereign Sukuk, KMI-30 & Sec 63 Tax optimizer
+│
+├── ai/                       # Explainability & Narrative Layer
+│   ├── report_generator.py   # Token-condensed LLM prompt dispatcher
+│   └── rule_engine.py        # 100% deterministic offline narrative fallback
+│
+├── data/                     # Database & Default Profiles
+│   ├── client_store.py       # SQLite persistence for assessments & clients
+│   └── synthetic_data.py     # 3 preloaded Pakistan client test cases
+│
+├── reports/                  # Audit-Ready PDF Generation
+│   ├── pdf_generator.py      # 12-section institutional client advisory PDF
+│   ├── generate_prd_pdf.py   # PRD PDF generation script
+│   └── generate_presentation_pdf.py # Presentation deck generation script
+│
+└── tests/                    # Automated Test Suite (25 Tests)
+    ├── test_math_verification.py
+    ├── test_capacity_engine.py
+    ├── test_suitability.py
+    ├── test_stress_testing.py
+    ├── test_v2_engines.py
+    └── verify_monte_carlo.py
+```
+
+---
+
+## 12. Version History & Roadmap
 - **V1 (Completed)**: Core deterministic engines, Pakistan Fact-Find, 5 stress scenarios, 12-section ReportLab PDF, Streamlit UI.
 - **V2 (Completed)**:
   - **1,000-Trial Monte Carlo Engine**: Stochastic simulation with 10th/50th/90th percentile confidence cone and probability of success %.
@@ -143,10 +211,10 @@ Interactive OpenAPI / Swagger documentation is available at:
 
 ---
 
-## 12. Regulatory & Safety Disclaimer
+## 13. Regulatory & Safety Disclaimer
 RetireWise AI is an open-source decision-support tool. It does not provide autonomous, regulated investment advice or guaranteed future outcomes. Calculations are deterministic mathematical simulations based on user inputs. Advisers must exercise independent judgment before making client recommendations.
 
 ---
 
-## 12. License
+## 14. License
 Distributed under the **Apache License 2.0**. See `LICENSE` for details.
