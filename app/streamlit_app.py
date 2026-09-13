@@ -482,8 +482,11 @@ with tab_scenarios:
     with p_col3:
         st.metric("Ending Capital at Horizon", f"PKR {base_scen.ending_capital_pkr:,.0f}")
 
+    st.markdown("<div style='margin-bottom: 20px;'></div>", unsafe_allow_html=True)
+
     # Plotly Charts
     st.plotly_chart(create_capital_trajectory_chart(scenarios), use_container_width=True)
+    st.markdown("<div style='margin-bottom: 16px;'></div>", unsafe_allow_html=True)
     st.plotly_chart(create_cash_flow_breakdown_chart(base_scen.yearly_trajectory), use_container_width=True)
 
     # Scenarios Comparison Table
@@ -516,6 +519,8 @@ with tab_monte_carlo:
         st.metric("Median Depletion Age", f"Age {mc_base.median_depletion_age}" if mc_base.median_depletion_age else "Solvent past 85+")
     with mc_c3:
         st.metric("Median Ending Capital", f"PKR {mc_base.median_ending_capital_pkr:,.0f}")
+
+    st.markdown("<div style='margin-bottom: 20px;'></div>", unsafe_allow_html=True)
 
     # Render Fan Chart
     st.plotly_chart(create_monte_carlo_fan_chart(mc_base), use_container_width=True)

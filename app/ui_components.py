@@ -34,14 +34,28 @@ def create_capital_trajectory_chart(scenarios: List[ScenarioResult]) -> go.Figur
         )
 
     fig.update_layout(
-        title=dict(text="<b>Modeled Retirement Capital Trajectory Across Scenarios</b>", font=dict(size=16)),
+        title=dict(
+            text="<b>Modeled Retirement Capital Trajectory Across Scenarios</b>",
+            font=dict(size=16),
+            x=0.02,
+            y=0.98,
+            xanchor="left",
+            yanchor="top",
+        ),
         xaxis_title="Client Age (Years)",
         yaxis_title="Retirement Capital (PKR)",
         hovermode="x unified",
-        template="plotly_white",
-        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
-        margin=dict(l=40, r=40, t=60, b=40),
-        height=450,
+        paper_bgcolor="rgba(0,0,0,0)",
+        plot_bgcolor="rgba(0,0,0,0)",
+        legend=dict(
+            orientation="h",
+            yanchor="top",
+            y=-0.22,
+            xanchor="center",
+            x=0.5,
+        ),
+        margin=dict(l=40, r=40, t=50, b=90),
+        height=480,
     )
     # Zero baseline line
     fig.add_hline(y=0, line_dash="dash", line_color="gray", annotation_text="Capital Depletion")
@@ -62,39 +76,55 @@ def create_cash_flow_breakdown_chart(trajectory: List[CashFlowYearProjection]) -
         go.Bar(
             x=ages,
             y=income,
-            name="Guaranteed Income (Pension/Rental)",
-            marker_color="#2e7d32",
+            name="Guaranteed Retirement Income",
+            marker=dict(color="#2e7d32"),
             hovertemplate="Age %{x}: PKR %{y:,.0f}",
         )
     )
+
     fig.add_trace(
         go.Bar(
             x=ages,
             y=withdrawals,
-            name="Net Capital Withdrawal Needed",
-            marker_color="#c62828",
+            name="Net Portfolio Withdrawal (Gap)",
+            marker=dict(color="#f57c00"),
             hovertemplate="Age %{x}: PKR %{y:,.0f}",
         )
     )
+
     fig.add_trace(
         go.Scatter(
             x=ages,
             y=expenses,
             name="Total Annual Living Expenses",
-            line=dict(color="#0d47a1", width=2.5, dash="dot"),
+            line=dict(color="#0288d1", width=2.5, dash="dot"),
             hovertemplate="Age %{x}: PKR %{y:,.0f}",
         )
     )
 
     fig.update_layout(
         barmode="stack",
-        title=dict(text="<b>Annual Cash Flow Breakdown (Income vs. Portfolio Withdrawals)</b>", font=dict(size=15)),
+        title=dict(
+            text="<b>Annual Cash Flow Breakdown (Income vs. Portfolio Withdrawals)</b>",
+            font=dict(size=15),
+            x=0.02,
+            y=0.98,
+            xanchor="left",
+            yanchor="top",
+        ),
         xaxis_title="Client Age",
         yaxis_title="PKR / Year",
-        template="plotly_white",
-        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
-        margin=dict(l=40, r=40, t=60, b=40),
-        height=420,
+        paper_bgcolor="rgba(0,0,0,0)",
+        plot_bgcolor="rgba(0,0,0,0)",
+        legend=dict(
+            orientation="h",
+            yanchor="top",
+            y=-0.22,
+            xanchor="center",
+            x=0.5,
+        ),
+        margin=dict(l=40, r=40, t=50, b=90),
+        height=460,
     )
     return fig
 
@@ -146,12 +176,20 @@ def create_risk_vs_capacity_matrix(risk_score: float, capacity_score: float) -> 
     )
 
     fig.update_layout(
-        title=dict(text="<b>Suitability Matrix: Risk Attitude vs. Financial Capacity</b>", font=dict(size=15)),
+        title=dict(
+            text="<b>Suitability Matrix: Risk Attitude vs. Financial Capacity</b>",
+            font=dict(size=15),
+            x=0.02,
+            y=0.98,
+            xanchor="left",
+            yanchor="top",
+        ),
         xaxis=dict(title="Psychological Risk Tolerance (0 = Low, 100 = Aggressive)", range=[0, 100]),
         yaxis=dict(title="Objective Capacity for Loss (0 = Low, 100 = High)", range=[0, 100]),
-        template="plotly_white",
-        margin=dict(l=40, r=40, t=60, b=40),
-        height=380,
+        paper_bgcolor="rgba(0,0,0,0)",
+        plot_bgcolor="rgba(0,0,0,0)",
+        margin=dict(l=40, r=40, t=50, b=40),
+        height=400,
     )
     return fig
 
@@ -200,8 +238,8 @@ def create_monte_carlo_fan_chart(mc_result) -> go.Figure:
             x=ages,
             y=p50,
             mode="lines+markers",
-            line=dict(color="#0f2942", width=3.5),
-            marker=dict(size=5, color="#0f2942"),
+            line=dict(color="#0288d1", width=3.5),
+            marker=dict(size=5, color="#0288d1"),
             name="50th Percentile (Median)",
             hovertemplate="Age %{x}: PKR %{y:,.0f}<extra>Median Trajectory</extra>",
             showlegend=True,
@@ -214,14 +252,25 @@ def create_monte_carlo_fan_chart(mc_result) -> go.Figure:
         title=dict(
             text=f"<b>Monte Carlo 1,000-Trial Confidence Cone (Success Rate: {mc_result.probability_of_success_pct}%)</b>",
             font=dict(size=16),
+            x=0.02,
+            y=0.98,
+            xanchor="left",
+            yanchor="top",
         ),
         xaxis_title="Client Age (Years)",
         yaxis_title="Portfolio Capital (PKR)",
-        template="plotly_white",
+        paper_bgcolor="rgba(0,0,0,0)",
+        plot_bgcolor="rgba(0,0,0,0)",
         hovermode="x unified",
-        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
-        margin=dict(l=40, r=40, t=60, b=40),
-        height=450,
+        legend=dict(
+            orientation="h",
+            yanchor="top",
+            y=-0.22,
+            xanchor="center",
+            x=0.5,
+        ),
+        margin=dict(l=40, r=40, t=50, b=90),
+        height=480,
     )
     return fig
 
@@ -249,8 +298,16 @@ def create_asset_allocation_chart(shariah_result) -> go.Figure:
     )
 
     fig.update_layout(
-        title=dict(text="<b>Recommended Portfolio Asset Allocation</b>", font=dict(size=15)),
-        template="plotly_white",
+        title=dict(
+            text="<b>Recommended Portfolio Asset Allocation</b>",
+            font=dict(size=15),
+            x=0.02,
+            y=0.98,
+            xanchor="left",
+            yanchor="top",
+        ),
+        paper_bgcolor="rgba(0,0,0,0)",
+        plot_bgcolor="rgba(0,0,0,0)",
         margin=dict(l=30, r=30, t=50, b=30),
         height=380,
         showlegend=False,
