@@ -60,11 +60,40 @@ st.set_page_config(
 st.markdown(
     """
     <style>
-    .main-header { font-size: 26px; font-weight: 700; color: #0f2942; margin-bottom: 2px; }
-    .sub-header { font-size: 14px; color: #555555; margin-bottom: 20px; }
-    .metric-card { background-color: #f8f9fa; border-radius: 8px; padding: 14px; border-left: 4px solid #0f2942; }
-    .conflict-card { background-color: #ffebee; border-radius: 8px; padding: 14px; border-left: 4px solid #d32f2f; margin-bottom: 12px; }
-    .success-card { background-color: #e8f5e9; border-radius: 8px; padding: 14px; border-left: 4px solid #2e7d32; margin-bottom: 12px; }
+    .main-header { font-size: 26px; font-weight: 700; color: var(--text-color, #0f2942); margin-bottom: 2px; }
+    .sub-header { font-size: 14px; opacity: 0.8; margin-bottom: 20px; }
+    .metric-card { 
+        background-color: rgba(2, 136, 209, 0.08); 
+        border: 1px solid rgba(2, 136, 209, 0.25);
+        border-radius: 8px; 
+        padding: 16px; 
+        border-left: 5px solid #0288d1; 
+        color: var(--text-color, inherit);
+    }
+    .metric-card h4 { color: #0288d1 !important; margin: 0 0 6px 0; font-size: 16px; }
+    .metric-card p { color: var(--text-color, inherit) !important; margin: 0; font-size: 14px; }
+    .conflict-card { 
+        background-color: rgba(211, 47, 47, 0.1); 
+        border: 1px solid rgba(211, 47, 47, 0.3);
+        border-radius: 8px; 
+        padding: 16px; 
+        border-left: 5px solid #d32f2f; 
+        margin-bottom: 14px; 
+        color: var(--text-color, inherit);
+    }
+    .conflict-card h4 { color: #ef5350 !important; margin: 0 0 6px 0; }
+    .conflict-card p { color: var(--text-color, inherit) !important; margin: 0; }
+    .success-card { 
+        background-color: rgba(46, 125, 50, 0.1); 
+        border: 1px solid rgba(46, 125, 50, 0.3);
+        border-radius: 8px; 
+        padding: 16px; 
+        border-left: 5px solid #2e7d32; 
+        margin-bottom: 14px; 
+        color: var(--text-color, inherit);
+    }
+    .success-card h4 { color: #4caf50 !important; margin: 0 0 6px 0; }
+    .success-card p { color: var(--text-color, inherit) !important; margin: 0; }
     </style>
     """,
     unsafe_allow_html=True,
@@ -524,12 +553,13 @@ with tab_monte_carlo:
         delta_success = round(dt_res["what_if_probability_of_success_pct"] - mc_base.probability_of_success_pct, 1)
         st.markdown(
             f"""
-            <div class='metric-card' style='margin-top:10px;'>
-                <h4 style='margin:0; color:#0f2942;'>What-If Scenario Impact:</h4>
-                <p style='margin:4px 0 0 0;'>
-                    New Success Rate: <b>{dt_res['what_if_probability_of_success_pct']}%</b> 
-                    (Change: <span style='color:{"#2e7d32" if delta_success >= 0 else "#d32f2f"}'><b>{delta_success:+0.1f}%</b></span>) | 
-                    Status: <b>{dt_res['confidence_verdict']}</b>
+            <div class='metric-card' style='margin-top:12px;'>
+                <h4>What-If Scenario Impact:</h4>
+                <p>
+                    New Retirement Success Rate: <b>{dt_res['what_if_probability_of_success_pct']}%</b> 
+                    (Change: <span style='color:{"#4caf50" if delta_success >= 0 else "#ef5350"}; font-weight:700;'><b>{delta_success:+0.1f}%</b></span>) &nbsp;|&nbsp; 
+                    Status: <b>{dt_res['confidence_verdict']}</b> &nbsp;|&nbsp;
+                    Median Depletion: <b>{'Age ' + str(dt_res['what_if_median_depletion_age']) if dt_res['what_if_median_depletion_age'] else 'Solvent Past 85+'}</b>
                 </p>
             </div>
             """,

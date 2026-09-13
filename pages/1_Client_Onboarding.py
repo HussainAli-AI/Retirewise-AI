@@ -32,9 +32,19 @@ st.set_page_config(
 st.markdown(
     """
     <style>
-    .portal-header { font-size: 26px; font-weight: 700; color: #0f2942; margin-bottom: 2px; }
-    .portal-sub { font-size: 14px; color: #555555; margin-bottom: 20px; }
-    .card-box { background-color: #f8f9fa; border-radius: 8px; padding: 16px; border-left: 4px solid #0f2942; margin-bottom: 15px; }
+    .portal-header { font-size: 26px; font-weight: 700; color: var(--text-color, #0f2942); margin-bottom: 2px; }
+    .portal-sub { font-size: 14px; opacity: 0.8; margin-bottom: 20px; }
+    .card-box { 
+        background-color: rgba(2, 136, 209, 0.08); 
+        border: 1px solid rgba(2, 136, 209, 0.25);
+        border-radius: 8px; 
+        padding: 16px; 
+        border-left: 5px solid #0288d1; 
+        margin-bottom: 15px; 
+        color: var(--text-color, inherit);
+    }
+    .card-box h4 { color: #0288d1 !important; margin: 0 0 6px 0; }
+    .card-box p { color: var(--text-color, inherit) !important; margin: 0; }
     </style>
     """,
     unsafe_allow_html=True,
