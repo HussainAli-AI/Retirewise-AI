@@ -186,12 +186,20 @@ with st.sidebar:
         )
         api_key_input = ""
         if selected_p != "mock":
-            existing_key = os.getenv(f"{selected_p.upper()}_API_KEY", "")
+            has_existing = bool(os.getenv(f"{selected_p.upper()}_API_KEY", ""))
+            try:
+                if not has_existing and hasattr(st, "secrets") and f"{selected_p.upper()}_API_KEY" in st.secrets:
+                    has_existing = bool(st.secrets[f"{selected_p.upper()}_API_KEY"])
+            except Exception:
+                pass
+
+            placeholder_text = "•••••••• (Configured securely on server)" if has_existing else f"Enter {selected_p.upper()} key..."
             api_key_input = st.text_input(
                 f"{selected_p.upper()} API Key",
-                value=existing_key,
+                value="",
                 type="password",
-                placeholder=f"Enter {selected_p.upper()} key...",
+                placeholder=placeholder_text,
+                help="Server secrets are hidden and never exposed to public visitors."
             )
 
         if st.button("Save AI Settings", type="primary"):
