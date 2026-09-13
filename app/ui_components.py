@@ -1,0 +1,156 @@
+"""Plotly charts and UI presentation components for RetireWise AI."""
+from typing import List
+import plotly.graph_objects as go
+from models.assessment import ScenarioResult, CashFlowYearProjection
+
+
+def create_capital_trajectory_chart(scenarios: List[ScenarioResult]) -> go.Figure:
+    """Creates multi-scenario capital depletion curves over time."""
+    fig = go.Figure()
+
+    colors = {
+        "Base Case": "#1b5e20",              # Green
+        "High Inflation Shock": "#d32f2f",    # Red
+        "Early Market Drawdown": "#f57c00",   # Orange
+        "Major Medical Expense Shock": "#7b1fa2", # Purple
+        "Early Retirement Shock": "#0288d1",  # Blue
+    }
+
+    for sc in scenarios:
+        ages = [p.client_age for p in sc.yearly_trajectory]
+        capitals = [p.ending_capital_pkr for p in sc.yearly_trajectory]
+        line_color = colors.get(sc.scenario_type.value, "#555555")
+
+        fig.add_trace(
+            go.Scatter(
+                x=ages,
+                y=capitals,
+                mode="lines+markers",
+                name=sc.scenario_name,
+                line=dict(color=line_color, width=2.5),
+                marker=dict(size=4),
+                hovertemplate="Age %{x}: PKR %{y:,.0f}<extra>" + sc.scenario_name + "</extra>",
+            )
+        )
+
+    fig.update_layout(
+        title=dict(text="<b>Modeled Retirement Capital Trajectory Across Scenarios</b>", font=dict(size=16)),
+        xaxis_title="Client Age (Years)",
+        yaxis_title="Retirement Capital (PKR)",
+        hovermode="x unified",
+        template="plotly_white",
+        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
+        margin=dict(l=40, r=40, t=60, b=40),
+        height=450,
+    )
+    # Zero baseline line
+    fig.add_hline(y=0, line_dash="dash", line_color="gray", annotation_text="Capital Depletion")
+
+    return fig
+
+
+def create_cash_flow_breakdown_chart(trajectory: List[CashFlowYearProjection]) -> go.Figure:
+    """Creates stacked/grouped bars of expenses, guaranteed income, and net portfolio withdrawal."""
+    ages = [p.client_age for p in trajectory]
+    expenses = [p.total_expenses_pkr for p in trajectory]
+    income = [p.guaranteed_income_pkr for p in trajectory]
+    withdrawals = [p.net_withdrawal_pkr for p in trajectory]
+
+    fig = go.Figure()
+
+    fig.add_trace(
+        go.Bar(
+            x=ages,
+            y=income,
+            name="Guaranteed Income (Pension/Rental)",
+            marker_color="#2e7d32",
+            hovertemplate="Age %{x}: PKR %{y:,.0f}",
+        )
+    )
+    fig.add_trace(
+        go.Bar(
+            x=ages,
+            y=withdrawals,
+            name="Net Capital Withdrawal Needed",
+            marker_color="#c62828",
+            hovertemplate="Age %{x}: PKR %{y:,.0f}",
+        )
+    )
+    fig.add_trace(
+        go.Scatter(
+            x=ages,
+            y=expenses,
+            name="Total Annual Living Expenses",
+            line=dict(color="#0d47a1", width=2.5, dash="dot"),
+            hovertemplate="Age %{x}: PKR %{y:,.0f}",
+        )
+    )
+
+    fig.update_layout(
+        barmode="stack",
+        title=dict(text="<b>Annual Cash Flow Breakdown (Income vs. Portfolio Withdrawals)</b>", font=dict(size=15)),
+        xaxis_title="Client Age",
+        yaxis_title="PKR / Year",
+        template="plotly_white",
+        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
+        margin=dict(l=40, r=40, t=60, b=40),
+        height=420,
+    )
+    return fig
+
+
+def create_risk_vs_capacity_matrix(risk_score: float, capacity_score: float) -> go.Figure:
+    """Visualizes psychological Risk Tolerance vs. objective Capacity for Loss."""
+    fig = go.Figure()
+
+    # Highlight Conflict Danger Zone (High Risk + Low Capacity)
+    fig.add_shape(
+        type="rect",
+        x0=50, x1=100,
+        y0=0, y1=45,
+        fillcolor="rgba(239, 83, 80, 0.25)",
+        line=dict(width=0),
+        layer="below",
+    )
+    fig.add_annotation(
+        x=75, y=22.5,
+        text="<b>SUITABILITY CONFLICT ZONE</b><br>(High Risk Attitude + Low Capacity)",
+        showarrow=False,
+        font=dict(color="#b71c1c", size=11),
+    )
+
+    # Balanced / Suitable Zone
+    fig.add_shape(
+        type="rect",
+        x0=0, x1=100,
+        y0=45, y1=100,
+        fillcolor="rgba(129, 199, 132, 0.15)",
+        line=dict(width=0),
+        layer="below",
+    )
+
+    # Client Point
+    is_conflict = (risk_score >= 60.0 and capacity_score <= 45.0)
+    point_color = "#d32f2f" if is_conflict else "#1565c0"
+
+    fig.add_trace(
+        go.Scatter(
+            x=[risk_score],
+            y=[capacity_score],
+            mode="markers+text",
+            marker=dict(size=18, color=point_color, line=dict(width=2, color="white")),
+            text=["<b>Client Position</b>"],
+            textposition="top center",
+            hovertemplate="Risk Tolerance: %{x}<br>Capacity for Loss: %{y}<extra></extra>",
+        )
+    )
+
+    fig.update_layout(
+        title=dict(text="<b>Suitability Matrix: Risk Attitude vs. Financial Capacity</b>", font=dict(size=15)),
+        xaxis=dict(title="Psychological Risk Tolerance (0 = Low, 100 = Aggressive)", range=[0, 100]),
+        yaxis=dict(title="Objective Capacity for Loss (0 = Low, 100 = High)", range=[0, 100]),
+        template="plotly_white",
+        margin=dict(l=40, r=40, t=60, b=40),
+        height=380,
+    )
+    return fig
