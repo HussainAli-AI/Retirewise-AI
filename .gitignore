@@ -17,6 +17,7 @@ __pycache__/
 generated_reports/
 *.pdf
 !RetireWise_AI_Product_Requirements_Document_PRD.pdf
+!RetireWise_AI_Presentation_Deck.pdf
 !docs/*.pdf
 
 # Environment & API keys
