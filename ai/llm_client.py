@@ -25,6 +25,18 @@ class LLMClient:
         self.gemini_key = os.getenv("GEMINI_API_KEY", "").strip("\"'")
         self.openai_key = os.getenv("OPENAI_API_KEY", "").strip("\"'")
 
+        # Check Streamlit secrets if running in Streamlit Cloud
+        try:
+            import streamlit as st
+            if not self.groq_key and hasattr(st, "secrets") and "GROQ_API_KEY" in st.secrets:
+                self.groq_key = str(st.secrets["GROQ_API_KEY"]).strip("\"'")
+            if not self.gemini_key and hasattr(st, "secrets") and "GEMINI_API_KEY" in st.secrets:
+                self.gemini_key = str(st.secrets["GEMINI_API_KEY"]).strip("\"'")
+            if not self.openai_key and hasattr(st, "secrets") and "OPENAI_API_KEY" in st.secrets:
+                self.openai_key = str(st.secrets["OPENAI_API_KEY"]).strip("\"'")
+        except Exception:
+            pass
+
         requested_provider = (provider or os.getenv("AI_PROVIDER", "")).lower()
 
         # If provider is not explicitly set, auto-detect based on available keys
