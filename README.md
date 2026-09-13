@@ -18,6 +18,8 @@ It answers the critical retirement question:
 
 RetireWise AI maintains complete separation between **deterministic, transparent Python calculation engines** and the **AI narrative generation layer**.
 
+📄 **[Institutional Product Requirements Document (PRD PDF)](RetireWise_AI_Product_Requirements_Document_PRD.pdf)**
+
 ---
 
 ## 2. The Problem

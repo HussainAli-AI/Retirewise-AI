@@ -16,6 +16,8 @@ __pycache__/
 # PDF Reports & temporary exports
 generated_reports/
 *.pdf
+!RetireWise_AI_Product_Requirements_Document_PRD.pdf
+!docs/*.pdf
 
 # Environment & API keys
 .env
