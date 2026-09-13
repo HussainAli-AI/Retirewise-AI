@@ -122,6 +122,50 @@ class ScenarioResult(BaseModel):
     yearly_trajectory: List[CashFlowYearProjection] = Field(default_factory=list)
 
 
+class MonteCarloTrajectoryPoint(BaseModel):
+    """Single age/year point in Monte Carlo percentiles."""
+    age: int
+    year_index: int
+    p10_capital_pkr: float
+    p50_capital_pkr: float
+    p90_capital_pkr: float
+
+
+class MonteCarloResult(BaseModel):
+    """Aggregated stochastic 1,000-trial simulation outcome."""
+    trials_count: int = 1000
+    probability_of_success_pct: float = Field(..., ge=0.0, le=100.0)
+    median_depletion_age: Optional[int] = None
+    median_ending_capital_pkr: float
+    p10_ending_capital_pkr: float
+    p90_ending_capital_pkr: float
+    percentile_trajectories: List[MonteCarloTrajectoryPoint] = Field(default_factory=list)
+    confidence_verdict: str
+
+
+class AssetAllocationItem(BaseModel):
+    """Individual asset class allocation recommendation."""
+    asset_class: str
+    recommended_pct: float
+    allocation_amount_pkr: float
+    instrument_examples: List[str]
+    is_shariah_compliant: bool
+    rationale: str
+
+
+class ShariahAllocationResult(BaseModel):
+    """Capacity-governed Pakistani Shariah & conventional asset allocation."""
+    is_shariah_mode: bool = True
+    capacity_equity_ceiling_pct: float
+    recommended_allocations: List[AssetAllocationItem]
+    vps_equity_sub_fund_pct: float
+    vps_debt_sub_fund_pct: float
+    vps_money_market_sub_fund_pct: float
+    estimated_annual_tax_credit_pkr: float
+    tax_optimization_notes: str
+    governing_rationale: str
+
+
 class SuitabilityAssessmentResult(BaseModel):
     """Comprehensive aggregated assessment payload."""
     assessment_id: str
@@ -137,3 +181,5 @@ class SuitabilityAssessmentResult(BaseModel):
     has_suitability_conflict: bool
     suitability_summary: str
     ai_narrative: Optional[Dict[str, Any]] = None
+    monte_carlo: Optional[MonteCarloResult] = None
+    shariah_allocation: Optional[ShariahAllocationResult] = None

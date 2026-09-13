@@ -32,6 +32,9 @@ from core.risk_engine import calculate_risk_tolerance, RISK_QUESTIONS
 from core.capacity_engine import calculate_capacity_for_loss, evaluate_suitability_conflicts
 from core.retirement_engine import run_retirement_cash_flow_simulation
 from core.scenario_engine import run_all_stress_scenarios
+from core.monte_carlo_engine import run_monte_carlo_simulation
+from core.shariah_engine import calculate_pakistan_asset_allocation
+from core.digital_twin import simulate_digital_twin_what_if
 from database.database import Database
 from data.sample_clients import get_synthetic_personas
 from ai.llm_client import LLMClient
@@ -41,6 +44,8 @@ from app.ui_components import (
     create_capital_trajectory_chart,
     create_cash_flow_breakdown_chart,
     create_risk_vs_capacity_matrix,
+    create_monte_carlo_fan_chart,
+    create_asset_allocation_chart,
 )
 
 # Page configuration
@@ -229,11 +234,13 @@ st.markdown(f"<div class='main-header'>Client Assessment: {active_client.name}</
 st.markdown(f"<div class='sub-header'>Adviser: {active_client.adviser_name} | Case ID: {active_client.client_id}</div>", unsafe_allow_html=True)
 
 # Tabs
-tab_overview, tab_factfind, tab_risk_capacity, tab_scenarios, tab_ai_report = st.tabs([
+tab_overview, tab_factfind, tab_risk_capacity, tab_scenarios, tab_monte_carlo, tab_shariah, tab_ai_report = st.tabs([
     "📊 Financial Snapshot",
     "📝 Fact-Find & Goals",
     "⚖️ Risk & Capacity Suitability",
-    "📈 Projections & Stress Scenarios",
+    "📈 Projections & Scenarios",
+    "🎲 Monte Carlo & Digital Twin",
+    "🕌 Shariah Asset Allocation",
     "📑 AI Insights & PDF Report",
 ])
 
@@ -465,7 +472,132 @@ with tab_scenarios:
     st.dataframe(scen_table_data, use_container_width=True)
 
 # ==========================================
-# TAB 5: AI INSIGHTS & PDF REPORT
+# TAB 5: MONTE CARLO & DIGITAL TWIN
+# ==========================================
+with tab_monte_carlo:
+    st.subheader("🎲 Monte Carlo 1,000-Trial Stochastic Simulation")
+    st.caption("Subjecting the client portfolio to 1,000 randomized market return and inflation cycles simultaneously.")
+
+    mc_base = run_monte_carlo_simulation(active_client, active_profile, fh, trials_count=1000)
+
+    mc_c1, mc_c2, mc_c3 = st.columns(3)
+    with mc_c1:
+        st.metric("Retirement Success Rate", f"{mc_base.probability_of_success_pct}%", delta=mc_base.confidence_verdict)
+    with mc_c2:
+        st.metric("Median Depletion Age", f"Age {mc_base.median_depletion_age}" if mc_base.median_depletion_age else "Solvent past 85+")
+    with mc_c3:
+        st.metric("Median Ending Capital", f"PKR {mc_base.median_ending_capital_pkr:,.0f}")
+
+    # Render Fan Chart
+    st.plotly_chart(create_monte_carlo_fan_chart(mc_base), use_container_width=True)
+
+    # Real-time What-If Digital Twin Section
+    st.markdown("---")
+    st.subheader("🔮 Financial Digital Twin: Interactive 'What-If' Sandbox")
+    st.caption("Adjust real-world life decisions below to see real-time recalculations on retirement solvency.")
+
+    wt_col1, wt_col2, wt_col3 = st.columns(3)
+    with wt_col1:
+        ret_age_shift = st.slider("Retirement Age Shift (Years)", min_value=-5, max_value=5, value=0, help="Negative = Earlier, Positive = Delayed")
+        adjusted_age = active_client.retirement_age + ret_age_shift
+        st.caption(f"Adjusted Retirement Age: **{adjusted_age}**")
+    with wt_col2:
+        exp_multiplier = st.slider("Retirement Living Expenses Multiplier", min_value=0.7, max_value=1.4, value=1.0, step=0.05, help="1.0 = baseline, 0.8 = frugal, 1.2 = lifestyle expansion")
+        base_exp = active_profile.expenses.expected_retirement_expenses_monthly or active_profile.expenses.essential_expenses_monthly
+        st.caption(f"Adjusted Monthly Living Burn: **PKR {base_exp * exp_multiplier:,.0f}/mo**")
+    with wt_col3:
+        lump_amt = st.number_input("One-Time Event PKR (+ Inflow / - Outflow)", value=0.0, step=500_000.0, help="Positive = Property Sale/Inheritance; Negative = Medical/Wedding Shock")
+        lump_age = st.slider("Event Age", min_value=active_client.current_age, max_value=active_client.planning_horizon_age, value=min(65, active_client.planning_horizon_age))
+
+    # Evaluate digital twin
+    if ret_age_shift != 0 or exp_multiplier != 1.0 or lump_amt != 0.0:
+        dt_res = simulate_digital_twin_what_if(
+            client=active_client,
+            financial_profile=active_profile,
+            health=fh,
+            retirement_age_delta=ret_age_shift,
+            monthly_expense_multiplier=exp_multiplier,
+            lump_sum_event_amount=lump_amt,
+            lump_sum_event_age=lump_age if lump_amt != 0.0 else None,
+            trials_count=500,
+        )
+        delta_success = round(dt_res["what_if_probability_of_success_pct"] - mc_base.probability_of_success_pct, 1)
+        st.markdown(
+            f"""
+            <div class='metric-card' style='margin-top:10px;'>
+                <h4 style='margin:0; color:#0f2942;'>What-If Scenario Impact:</h4>
+                <p style='margin:4px 0 0 0;'>
+                    New Success Rate: <b>{dt_res['what_if_probability_of_success_pct']}%</b> 
+                    (Change: <span style='color:{"#2e7d32" if delta_success >= 0 else "#d32f2f"}'><b>{delta_success:+0.1f}%</b></span>) | 
+                    Status: <b>{dt_res['confidence_verdict']}</b>
+                </p>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+# ==========================================
+# TAB 6: SHARIAH ASSET ALLOCATION
+# ==========================================
+with tab_shariah:
+    st.subheader("🕌 Pakistan Asset Allocation & Shariah Recommender")
+    st.caption("Portfolio asset allocation strictly anchored to Objective Capacity for Loss, with Section 63 tax credit optimization.")
+
+    standard_choice = st.radio(
+        "Select Regulatory Framework",
+        ["Shariah-Compliant (Islamic)", "Conventional Fixed Income"],
+        horizontal=True,
+    )
+    is_shariah = (standard_choice == "Shariah-Compliant (Islamic)")
+
+    shariah_res = calculate_pakistan_asset_allocation(
+        client=active_client,
+        financial_profile=active_profile,
+        health=fh,
+        capacity=capacity_result,
+        risk=risk_result,
+        is_shariah_mode=is_shariah,
+    )
+
+    sh_col1, sh_col2, sh_col3 = st.columns(3)
+    with sh_col1:
+        st.metric("Capacity Equity Ceiling", f"{shariah_res.capacity_equity_ceiling_pct}%", delta="Mandatory Max Cap")
+    with sh_col2:
+        recommended_equity = next((item.recommended_pct for item in shariah_res.recommended_allocations if "Equities" in item.asset_class), 0.0)
+        st.metric("Recommended Equity Allocation", f"{recommended_equity}%")
+    with sh_col3:
+        st.metric("Est. Annual VPS Tax Credit", f"PKR {shariah_res.estimated_annual_tax_credit_pkr:,.0f}", delta="Sec 63 Rebate")
+
+    st.info(f"⚖️ **Governing Suitability Directive:** {shariah_res.governing_rationale}")
+
+    alloc_c1, alloc_c2 = st.columns([1, 1])
+    with alloc_c1:
+        st.plotly_chart(create_asset_allocation_chart(shariah_res), use_container_width=True)
+    with alloc_c2:
+        st.markdown("#### Recommended Voluntary Pension Scheme (VPS) Sub-Funds")
+        st.markdown(
+            f"""
+            - **VPS Equity Sub-Fund:** **{shariah_res.vps_equity_sub_fund_pct}%**
+            - **VPS Debt / Sukuk Sub-Fund:** **{shariah_res.vps_debt_sub_fund_pct}%**
+            - **VPS Money Market Sub-Fund:** **{shariah_res.vps_money_market_sub_fund_pct}%**
+            """
+        )
+        st.caption(shariah_res.tax_optimization_notes)
+
+    st.markdown("#### Pakistani Instrument Allocation Breakdown")
+    alloc_table = []
+    for item in shariah_res.recommended_allocations:
+        alloc_table.append({
+            "Asset Class": item.asset_class,
+            "Allocation %": f"{item.recommended_pct}%",
+            "Target Amount (PKR)": f"PKR {item.allocation_amount_pkr:,.0f}",
+            "Pakistani Market Examples": ", ".join(item.instrument_examples),
+            "Strategic Rationale": item.rationale,
+        })
+    st.dataframe(alloc_table, use_container_width=True)
+
+# ==========================================
+# TAB 7: AI INSIGHTS & PDF REPORT
 # ==========================================
 with tab_ai_report:
     st.subheader("AI Financial Intelligence & Audit Layer")
@@ -490,6 +622,8 @@ with tab_ai_report:
             if has_conflict
             else "Suitable: Risk attitude and financial capacity are aligned."
         ),
+        monte_carlo=mc_base,
+        shariah_allocation=shariah_res,
     )
 
     col_btn1, col_btn2 = st.columns([1, 1])

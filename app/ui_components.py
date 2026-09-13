@@ -154,3 +154,106 @@ def create_risk_vs_capacity_matrix(risk_score: float, capacity_score: float) -> 
         height=380,
     )
     return fig
+
+
+def create_monte_carlo_fan_chart(mc_result) -> go.Figure:
+    """Creates a 1,000-trial percentile fan chart with shaded 10th-90th confidence cone."""
+    points = mc_result.percentile_trajectories
+    ages = [p.age for p in points]
+    p10 = [p.p10_capital_pkr for p in points]
+    p50 = [p.p50_capital_pkr for p in points]
+    p90 = [p.p90_capital_pkr for p in points]
+
+    fig = go.Figure()
+
+    # Upper bound (90th percentile)
+    fig.add_trace(
+        go.Scatter(
+            x=ages,
+            y=p90,
+            mode="lines",
+            line=dict(color="rgba(2, 136, 209, 0.2)", width=1),
+            name="90th Percentile (Bull Case)",
+            hovertemplate="Age %{x}: PKR %{y:,.0f}<extra>90th Percentile</extra>",
+            showlegend=True,
+        )
+    )
+
+    # Lower bound (10th percentile) filled to upper bound
+    fig.add_trace(
+        go.Scatter(
+            x=ages,
+            y=p10,
+            mode="lines",
+            fill="tonexty",
+            fillcolor="rgba(2, 136, 209, 0.15)",
+            line=dict(color="rgba(2, 136, 209, 0.2)", width=1),
+            name="10th Percentile (Bear Case)",
+            hovertemplate="Age %{x}: PKR %{y:,.0f}<extra>10th Percentile</extra>",
+            showlegend=True,
+        )
+    )
+
+    # Median (50th percentile)
+    fig.add_trace(
+        go.Scatter(
+            x=ages,
+            y=p50,
+            mode="lines+markers",
+            line=dict(color="#0f2942", width=3.5),
+            marker=dict(size=5, color="#0f2942"),
+            name="50th Percentile (Median)",
+            hovertemplate="Age %{x}: PKR %{y:,.0f}<extra>Median Trajectory</extra>",
+            showlegend=True,
+        )
+    )
+
+    fig.add_hline(y=0, line_dash="dash", line_color="#d32f2f", annotation_text="Capital Exhaustion")
+
+    fig.update_layout(
+        title=dict(
+            text=f"<b>Monte Carlo 1,000-Trial Confidence Cone (Success Rate: {mc_result.probability_of_success_pct}%)</b>",
+            font=dict(size=16),
+        ),
+        xaxis_title="Client Age (Years)",
+        yaxis_title="Portfolio Capital (PKR)",
+        template="plotly_white",
+        hovermode="x unified",
+        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
+        margin=dict(l=40, r=40, t=60, b=40),
+        height=450,
+    )
+    return fig
+
+
+def create_asset_allocation_chart(shariah_result) -> go.Figure:
+    """Creates a donut chart of recommended Pakistani asset allocations."""
+    labels = [item.asset_class for item in shariah_result.recommended_allocations]
+    values = [item.recommended_pct for item in shariah_result.recommended_allocations]
+    amounts = [item.allocation_amount_pkr for item in shariah_result.recommended_allocations]
+
+    palette = ["#1b5e20", "#0288d1", "#f57c00", "#7b1fa2", "#555555"]
+
+    fig = go.Figure(
+        data=[
+            go.Pie(
+                labels=labels,
+                values=values,
+                hole=0.45,
+                marker=dict(colors=palette),
+                textinfo="label+percent",
+                hovertemplate="<b>%{label}</b><br>Allocation: %{percent}<br>PKR %{customdata:,.0f}<extra></extra>",
+                customdata=amounts,
+            )
+        ]
+    )
+
+    fig.update_layout(
+        title=dict(text="<b>Recommended Portfolio Asset Allocation</b>", font=dict(size=15)),
+        template="plotly_white",
+        margin=dict(l=30, r=30, t=50, b=30),
+        height=380,
+        showlegend=False,
+    )
+    return fig
+

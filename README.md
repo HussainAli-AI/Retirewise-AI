@@ -113,21 +113,37 @@ RetireWise AI comes preloaded with three synthetic client profiles:
 ---
 
 ## 9. Running Tests
-To run the complete automated test suite:
+To run the complete automated test suite (25 tests covering math, capacity, Monte Carlo, Shariah, and FastAPI):
 ```bash
 pytest tests/ -v
 ```
 
 ---
 
-## 10. Future Roadmap
-- **V2**: Financial Digital Twin, Client Self-Service Portal, Shariah Asset Allocation Filters.
-- **V3**: Institutional AMC/Bank Multi-Tenant Portals, Compliance Oversight Dashboards.
-- **V4**: REST API Suite (Risk Profiling API, Capacity API, Stress-Testing API).
+## 10. Running the FastAPI REST Microservice
+RetireWise AI includes a headless FastAPI service for banking and AMC integration:
+```bash
+uvicorn api.main:app --port 8000 --reload
+```
+Interactive OpenAPI / Swagger documentation is available at:
+`http://localhost:8000/docs`
 
 ---
 
-## 11. Regulatory & Safety Disclaimer
+## 11. Version History & Roadmap
+- **V1 (Completed)**: Core deterministic engines, Pakistan Fact-Find, 5 stress scenarios, 12-section ReportLab PDF, Streamlit UI.
+- **V2 (Completed)**:
+  - **1,000-Trial Monte Carlo Engine**: Stochastic simulation with 10th/50th/90th percentile confidence cone and probability of success %.
+  - **Financial Digital Twin**: Real-time What-If sandbox (retirement age shifts, expense scaling, lump-sum events).
+  - **Pakistan Shariah & Asset Allocation**: Sovereign Sukuks, KMI-30 equities, VPS sub-funds, and Section 63 ITO tax credit optimizer.
+  - **Client Self-Service Portal**: Pre-consultation onboarding flow (`pages/1_Client_Onboarding.py`).
+  - **Headless FastAPI REST API**: Endpoints for assessments, Monte Carlo, Shariah allocations, and client management.
+- **V3 (Planned)**: Institutional AMC/Bank Multi-Tenant Portals, Compliance Oversight Dashboards.
+- **V4 (Planned)**: Core Banking Connectors & Enterprise CRM Integrations.
+
+---
+
+## 12. Regulatory & Safety Disclaimer
 RetireWise AI is an open-source decision-support tool. It does not provide autonomous, regulated investment advice or guaranteed future outcomes. Calculations are deterministic mathematical simulations based on user inputs. Advisers must exercise independent judgment before making client recommendations.
 
 ---

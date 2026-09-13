@@ -40,7 +40,7 @@ class LLMClient:
         requested_provider = (provider or os.getenv("AI_PROVIDER", "")).lower()
 
         # If provider is not explicitly set, auto-detect based on available keys
-        if not requested_provider or requested_provider == "mock":
+        if not requested_provider:
             if self.groq_key:
                 self.provider = "groq"
             elif self.gemini_key:
